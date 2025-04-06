@@ -47,6 +47,9 @@ async def get_daily_transactions(
 ):
     """Get all karma cash transactions for a specific day."""
     try:
+        # Use today's date if no date is provided
+        if date is None:
+            date = datetime.now()
         return await karma_cash_repository.get_daily_transactions(date)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

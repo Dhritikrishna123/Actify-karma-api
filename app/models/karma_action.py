@@ -7,6 +7,27 @@ from .base import BaseDBModel
 
 class KarmaActionType(str, Enum):
     """Enum defining all possible karma action types"""
+    # Content Actions
+    CONTENT_CREATION = "content_creation"
+    CONTENT_UPDATE = "content_update"
+    CONTENT_DELETION = "content_deletion"
+    CONTENT_SHARE = "content_share"
+    CONTENT_COMMENT = "content_comment"
+    CONTENT_LIKE = "content_like"
+    
+    # Community Actions
+    COMMUNITY_HELP = "community_help"
+    COMMUNITY_MODERATION = "community_moderation"
+    COMMUNITY_GUIDANCE = "community_guidance"
+    COMMUNITY_EVENT = "community_event"
+    
+    # Verification Actions
+    VERIFICATION = "verification"
+    IDENTITY_VERIFICATION = "identity_verification"
+    EXPERTISE_VERIFICATION = "expertise_verification"
+    AFFILIATION_VERIFICATION = "affiliation_verification"
+    
+    # Report Actions
     REPORT_CREATION = "report_creation"
     REPORT_ENDORSEMENT = "report_endorsement"
     REPORT_RESOLUTION = "report_resolution"
@@ -17,6 +38,8 @@ class KarmaActionType(str, Enum):
     REPORT_SHARE = "report_share"
     REPORT_VERIFICATION = "report_verification"
     REPORT_FLAG = "report_flag"
+    
+    # Authority Actions
     AUTHORITY_VERIFICATION = "authority_verification"
     AUTHORITY_ESCALATION = "authority_escalation"
     AUTHORITY_RESOLUTION = "authority_resolution"
@@ -24,6 +47,8 @@ class KarmaActionType(str, Enum):
     AUTHORITY_COMMENT = "authority_comment"
     AUTHORITY_SHARE = "authority_share"
     AUTHORITY_FLAG = "authority_flag"
+    
+    # User Actions
     USER_VERIFICATION = "user_verification"
     USER_ESCALATION = "user_escalation"
     USER_RESOLUTION = "user_resolution"

@@ -9,7 +9,7 @@ from .....db.repositories.karma_repository import KarmaRepository
 from .....models.karma import KarmaTransaction, KarmaTransactionCreate
 from .....models.user import UserReference
 
-router = APIRouter(prefix="/karma", tags=["karma_scores"])
+router = APIRouter(tags=["karma_scores"])
 
 class KarmaResponse(BaseModel):
     """Response model for karma operations."""
@@ -20,7 +20,18 @@ class KarmaResponse(BaseModel):
 # Import the dependency function after router creation
 from ..karma_router import get_karma_repository
 
-@router.get("/user/{user_id}", response_model=KarmaResponse)
+@router.post("/transactions", response_model=KarmaTransaction)
+async def create_karma_transaction(
+    transaction: KarmaTransactionCreate,
+    karma_repository: KarmaRepository = Depends(get_karma_repository)
+):
+    """Create a new karma transaction."""
+    try:
+        return await karma_repository.create_transaction(transaction)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/users/{user_id}", response_model=KarmaResponse)
 async def get_user_karma(
     user_id: str = Path(..., description="The ID of the user"),
     start_date: Optional[datetime] = None,
@@ -45,7 +56,7 @@ async def get_user_karma(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/user/{user_id}/domain/{domain}", response_model=KarmaResponse)
+@router.get("/users/{user_id}/domains/{domain}", response_model=KarmaResponse)
 async def get_user_domain_karma(
     user_id: str = Path(..., description="The ID of the user"),
     domain: str = Path(..., description="The karma domain to query"),

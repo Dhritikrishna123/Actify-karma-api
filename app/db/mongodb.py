@@ -48,15 +48,17 @@ class MongoDB:
             self._db = self._client[db_name]
             
             logger.info(f"Successfully connected to MongoDB Atlas! Database: {db_name}")
+            return True
         except Exception as e:
             logger.error(f"Could not connect to MongoDB Atlas: {str(e)}")
             # Don't raise the exception, just log it
             self._client = None
             self._db = None
+            return False
 
     async def close_database_connection(self):
         """Close the database connection."""
-        if self._client:
+        if self._client is not None:
             self._client.close()
             self._client = None
             self._db = None
@@ -64,8 +66,9 @@ class MongoDB:
 
     def get_db(self):
         """Get the database instance."""
-        if not self._db:
+        if self._db is None:
             logger.warning("Database not connected. Please call connect_to_database() first.")
+            return None
         return self._db
 
 # Create a single instance of MongoDB

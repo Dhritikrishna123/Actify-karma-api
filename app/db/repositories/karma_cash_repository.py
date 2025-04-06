@@ -4,6 +4,7 @@ from typing import Optional, List
 from datetime import datetime, UTC
 from bson import ObjectId
 from pydantic import BaseModel
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from ...models.karma_cash import KarmaCashTransaction, KarmaCashTransactionCreate
 from ...models.karma_action import KarmaActionType
@@ -13,9 +14,9 @@ from ..mongodb import mongodb
 class KarmaCashRepository:
     """Repository for karma cash-related database operations."""
     
-    def __init__(self):
+    def __init__(self, db: AsyncIOMotorDatabase = None):
         """Initialize repository with database connection."""
-        self.db = mongodb.get_db()
+        self.db = db if db is not None else mongodb.get_db()
         self.collection = self.db.karma_cash_transactions
         
     async def create_transaction(self, transaction: KarmaCashTransactionCreate) -> KarmaCashTransaction:

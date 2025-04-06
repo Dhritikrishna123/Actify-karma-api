@@ -2,6 +2,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, Field, validator
 from enum import Enum
+from bson import ObjectId
 
 from .base import BaseDBModel
 from .user import UserReference
@@ -57,11 +58,19 @@ class KarmaTransaction(BaseDBModel):
         description="When the transaction was last updated"
     )
 
+    @validator('id', pre=True)
+    def convert_objectid_to_str(cls, v):
+        if isinstance(v, ObjectId):
+            return str(v)
+        return v
+
     class Config:
         json_encoders = {
             datetime: lambda dt: dt.isoformat()
         }
         use_enum_values = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 class KarmaRule(BaseDBModel):
     """Model for defining karma point rules"""
@@ -108,16 +117,35 @@ class KarmaRule(BaseDBModel):
         use_enum_values = True
 
 class KarmaTransactionCreate(BaseModel):
-    """Model for creating a new karma transaction"""
-    user: UserReference
-    action_type: KarmaActionType
-    points: float
-    context_id: Optional[str] = None
-    context_type: Optional[str] = None
-    description: Optional[str] = None
-
-    class Config:
-        use_enum_values = True
+    """Model for creating new karma transactions"""
+    user: UserReference = Field(
+        ...,
+        description="User who performed the action"
+    )
+    action_type: KarmaActionType = Field(
+        ...,
+        description="Type of action that triggered this transaction"
+    )
+    points: float = Field(
+        ...,
+        description="Karma points awarded/deducted (can be negative)"
+    )
+    domain: str = Field(
+        ...,
+        description="Domain of the action (e.g., 'content', 'community')"
+    )
+    context_id: Optional[str] = Field(
+        default=None,
+        description="ID of the related entity"
+    )
+    context_type: Optional[str] = Field(
+        default=None,
+        description="Type of the related entity"
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description="Additional description of the transaction"
+    )
 
 class KarmaRuleCreate(BaseModel):
     """Model for creating a new karma rule"""
@@ -147,4 +175,15 @@ def validate_points(cls, v):
     """Validate that points are not zero."""
     if v == 0:
         raise ValueError("Points cannot be zero")
-    return v 
+    return v
+
+class KarmaScore(BaseModel):
+    """Model for representing a user's karma score"""
+    overall_score: float = Field(
+        default=0.0,
+        description="Overall karma score across all domains"
+    )
+    domain_scores: Dict[str, float] = Field(
+        default_factory=dict,
+        description="Karma scores by domain"
+    ) 

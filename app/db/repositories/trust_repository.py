@@ -4,6 +4,7 @@ from typing import Optional, List, Dict
 from datetime import datetime, UTC
 from bson import ObjectId
 from pydantic import BaseModel
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from ...models.trust import TrustScore, TrustScoreCreate, TrustMetric
 from ...models.user import UserReference
@@ -12,15 +13,15 @@ from ...db.mongodb import mongodb
 class TrustRepository:
     """Repository for trust-related database operations."""
     
-    def __init__(self):
+    def __init__(self, db: AsyncIOMotorDatabase = None):
         """Initialize repository with database connection."""
-        self.db = mongodb.get_db()
+        self.db = db if db is not None else mongodb.get_db()
         self.collection = self.db.trust_scores
         
     async def create_trust_score(self, trust_score: TrustScoreCreate) -> TrustScore:
         """Create a new trust score."""
         # Convert to dict and add timestamps
-        trust_dict = trust_score.model_dump()
+        trust_dict = trust_score.dict()
         trust_dict["created_at"] = datetime.now(UTC)
         trust_dict["updated_at"] = datetime.now(UTC)
         
@@ -28,6 +29,7 @@ class TrustRepository:
         result = await self.collection.insert_one(trust_dict)
         
         # Add ID and return as TrustScore
+        trust_dict["id"] = str(result.inserted_id)
         trust_dict["_id"] = result.inserted_id
         return TrustScore(**trust_dict)
         
@@ -38,11 +40,15 @@ class TrustRepository:
         """Get current trust score for a user."""
         # Get latest trust score
         cursor = self.collection.find(
-            {"user.id": user_id}
+            {"user.core_user_id": user_id}
         ).sort("created_at", -1).limit(1)
         
         result = await cursor.to_list(length=1)
-        return TrustScore(**result[0]) if result else None
+        if not result:
+            return None
+            
+        result[0]["id"] = str(result[0]["_id"])
+        return TrustScore(**result[0])
         
     async def get_user_trust_history(
         self,
@@ -95,7 +101,7 @@ class TrustRepository:
         if not current_score:
             # Create new trust score if none exists
             new_score = TrustScoreCreate(
-                user=UserReference(id=user_id),
+                user=UserReference(core_user_id=user_id),
                 overall_score=0.0,
                 metrics={metric_name: value}
             )
