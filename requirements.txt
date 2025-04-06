@@ -1,0 +1,24 @@
+# Project dependencies
+
+# Core Web Framework
+fastapi==0.95.2  # This version is fully compatible with Pydantic 1.10.13
+uvicorn>=0.23.2
+
+# Database
+pymongo>=4.5.0
+motor>=3.2.0
+
+# Environment and Settings
+python-dotenv>=1.0.0
+pydantic==1.10.13
+pydantic[email]>=1.10.13  # For email validation
+pydantic[typing-extensions]>=1.10.13  # For better type hints
+
+# Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.9
+
+# Testing
+pytest>=7.4.2
+httpx>=0.24.1

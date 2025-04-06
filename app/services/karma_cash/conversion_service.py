@@ -1,0 +1,1 @@
+# Karma to KarmaCash conversion
